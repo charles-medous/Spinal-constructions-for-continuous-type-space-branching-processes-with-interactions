@@ -22,7 +22,7 @@ Download/Clone the repository, and acces it.
 
 ```sh
 git clone https://github.com/charles-medous/Spinal-method-for-Yule-model
-cd Spinal-constructions-for-continuous-type-space-branching-processes-with-interactions
+cd Spinal-method-for-Yule-model
 
 ```
 
