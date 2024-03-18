@@ -16,7 +16,6 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib
-import time
 
 import spinal_method
 import ogata_method
@@ -150,11 +149,11 @@ class Parameters:
 if __name__ == "__main__":
     Param_set = [(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),
                  (0.3, 0.3, 0.3, 8, 0.5), (0.3, 0.05, 0.3, 2, 0.5),
-                 (0.3, 1, 0.3, 2, 0.5), (0.3, 2, 0.3, 2, 0.5),
-                 (0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 2),
+                 (0.3, 1, 0.3, 2, 0.5), (0.3, 1.5, 0.3, 2, 0.5),
+                 (0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 1.5),
                  (0.05, 0.3, 0.3, 2, 0.5), (1, 0.3, 0.3, 2, 0.5),
-                 (2, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),
-                 (0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 2, 2, 0.5)]
+                 (1.5, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),
+                 (0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 1.8, 2, 0.5)]
     print('Choose idx of the parameters (mu, r, d, N_0, init_mass) in the ' +
           'folowing list :\n' +
           '[(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),\n'+
@@ -177,20 +176,19 @@ if __name__ == "__main__":
             running_time = M * 4.9 / 10000
         elif idx in [3, 11]:
             running_time = M * 3.1 / 10000
-        elif idx in [1, 5]:
-            running_time = M * 9.8 / 10000
-        elif idx == 13:
-            running_time = M * 6.9 / 10000
+        elif idx == 1:
+            running_time = M * 8.7 / 10000
+        elif idx in [5, 13]:
+            running_time = M * 6 / 10000
         elif idx == 2:
             running_time = M * 18 / 10000
 
         if  M < 100000:
-            print("running time: around %d secondes" % (running_time))
+            print("running time: around %.d secondes" % (round(running_time)))
         else:
             print("running time: around %.1f min" % (running_time/60))
         run = input("do you confirm? (y/n) ")
-
-    t_0 = time.time()    
+  
     (mu, r, d, N_0, init_mass) = Param_set[idx]
     parameters = Parameters(mu, r, d, N_0, init_mass, 1)
     x_bar_spine = 0
@@ -207,8 +205,7 @@ if __name__ == "__main__":
         x_bar_spine_1 += spinal_method.trajectory(parameters) / M
         # Ogata's method
         x_bar += ogata_method.trajectory(parameters) / M
-    t_1 = time.time()
-    
+
     print('\n \n x_bar = %.3f with spinal method 1' % (x_bar_spine))
     print('\n x_bar = %.3f with spinal method 2' % (x_bar_spine_1))
     print('\n x_bar= %.3f with Ogata method' % (x_bar))
