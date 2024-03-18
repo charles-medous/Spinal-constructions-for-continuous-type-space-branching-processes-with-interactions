@@ -5,15 +5,18 @@ Usage:
     Choose (M, idx) the Monte_Carlo number of iterations, and the set of
     parameters on which to compare the 3 methods.
 
-    M: an integer from 1000 to 1.000.000 (change in line 149)
-    idx: an integer between 0 and 16 (change line 150)
+    M: an integer from 1000 to 1.000.000 (prompt input)
+    idx: an integer between 0 and 13 (prompt input)
 
-    Print the estimated values for x_bar for the 3 methods
+    Print the estimated values for x_bar for the 3 methods and the relative
+    percent difference (RPD). The RPD is defined as the difference divided by
+    the average of the two values.
 """
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib
+import time
 
 import spinal_method
 import ogata_method
@@ -145,18 +148,49 @@ class Parameters:
 
 
 if __name__ == "__main__":
-
-    M = 10000  # Choose nomber of sample path
-    idx = 8  # Choose index of parameters in following list
-
     Param_set = [(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),
-                 (0.3, 0.3, 0.3, 10, 0.5), (0.3, 0.05, 0.3, 2, 0.5),
+                 (0.3, 0.3, 0.3, 8, 0.5), (0.3, 0.05, 0.3, 2, 0.5),
                  (0.3, 1, 0.3, 2, 0.5), (0.3, 2, 0.3, 2, 0.5),
                  (0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 2),
                  (0.05, 0.3, 0.3, 2, 0.5), (1, 0.3, 0.3, 2, 0.5),
                  (2, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),
                  (0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 2, 2, 0.5)]
+    print('Choose idx of the parameters (mu, r, d, N_0, init_mass) in the ' +
+          'folowing list :\n' +
+          '[(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),\n'+
+                       '(0.3, 0.3, 0.3, 10, 0.5), (0.3, 0.05, 0.3, 2, 0.5),\n'+
+                       '(0.3, 1, 0.3, 2, 0.5), (0.3, 2, 0.3, 2, 0.5),\n'+
+                       '(0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 2),\n'+
+                       '(0.05, 0.3, 0.3, 2, 0.5), (1, 0.3, 0.3, 2, 0.5),\n'+
+                       '(2, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),\n'+
+                       '(0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 2, 2, 0.5)]\n')
+    idx = -1
+    while idx < 0 or idx > 13:
+        idx = int(input("Enter the chosen idx between 0 and 13: idx = "))
+    M = 0
+    run = 'n'
+    while run == 'n' or run == 'no' or run == 'N' or run == 'NO':
+        M = int(input("Enter the number of Monte-Carlo iterations: M = "))
+        if idx in [0, 6, 7, 8, 9, 10]:
+            running_time = M * 3.7 / 10000
+        elif idx in [4, 12]:
+            running_time = M * 4.9 / 10000
+        elif idx in [3, 11]:
+            running_time = M * 3.1 / 10000
+        elif idx in [1, 5]:
+            running_time = M * 9.8 / 10000
+        elif idx == 13:
+            running_time = M * 6.9 / 10000
+        elif idx == 2:
+            running_time = M * 18 / 10000
 
+        if  M < 100000:
+            print("running time: around %d secondes" % (running_time))
+        else:
+            print("running time: around %.1f min" % (running_time/60))
+        run = input("do you confirm? (y/n) ")
+
+    t_0 = time.time()    
     (mu, r, d, N_0, init_mass) = Param_set[idx]
     parameters = Parameters(mu, r, d, N_0, init_mass, 1)
     x_bar_spine = 0
@@ -173,7 +207,15 @@ if __name__ == "__main__":
         x_bar_spine_1 += spinal_method.trajectory(parameters) / M
         # Ogata's method
         x_bar += ogata_method.trajectory(parameters) / M
-
-    print('\n x_bar = %.3f with spinal method 1' % (x_bar_spine))
+    t_1 = time.time()
+    
+    print('\n \n x_bar = %.3f with spinal method 1' % (x_bar_spine))
     print('\n x_bar = %.3f with spinal method 2' % (x_bar_spine_1))
-    print('\n x_bar= %.3f with Ogata method \n' % (x_bar))
+    print('\n x_bar= %.3f with Ogata method' % (x_bar))
+    rpd = [2 * abs(x_bar_spine-x_bar_spine_1) / (x_bar_spine + x_bar_spine_1),
+           2 * abs(x_bar_spine-x_bar) / (x_bar_spine + x_bar),
+           2 * abs(x_bar-x_bar_spine_1) / (x_bar + x_bar_spine_1)]
+    print('\n Relative Percent Difference: RPD_{S1,S2} = ' +
+          "{:.1%}".format(rpd[0]) + ', RPD_{S1,O} = '  +
+          "{:.1%}".format(rpd[1]) + ', RPD_{S2,O} = ' +
+          "{:.1%}".format(rpd[2]))
