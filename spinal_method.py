@@ -31,43 +31,48 @@ def spinal_division_times(parameters):
     float
         The integral on [0, parameters.T] of the square population size n^2
     """
+    n_thresh = (np.exp(parameters.r_psi) - 1) * (parameters.N_0) 
     # Division time simulation for expected small populations
-    if np.exp(parameters.r_psi) * parameters.N_0 < 30:
+    if n_thresh < 30:
         t_div = [0]
         n = parameters.N_0
+        int_n = 0
+        int_n_square = 0   
         while t_div[-1] < parameters.T:
             delta_t = np.random.exponential(1 / (parameters.r_psi * n))
             if t_div[-1] + delta_t < parameters.T:
                 t_div.append(t_div[-1] + delta_t)
             else:
                 break
+            int_n += n * delta_t
+            int_n_square += delta_t * n ** 2
             n += 1
         # Computation of values
-        int_n = n * parameters.T - sum(t_div)
-        int_n_square = (n ** 2 * parameters.T - (2 * parameters.N_0 - 1) *
-                        sum(t_div) - 2 * sum(np.cumsum(t_div[: 0: - 1])))
+        int_n += n * (parameters.T - t_div[-1])
+        int_n_square += n ** 2 * (parameters.T - t_div[-1])
         # Adding the ending time in the list
         t_div.append(parameters.T)
+        return(t_div, int(n), int_n, int_n_square)
 
     # Division time simulation for expected big populations
     else:
         n_max = int(np.exp(1.5 + parameters.r_psi) * (parameters.N_0 + 1))
-        t_div = np.empty(n_max + 1 - parameters.N_0)
-        t_div[0] = 0
+        t_div = np.zeros(n_max + 1 - parameters.N_0)
         t_div[1:] = np.cumsum(
             np.random.exponential(1 / (parameters.r_psi *
                                        np.arange(parameters.N_0, n_max))))
         idx_last = np.argmax(t_div > parameters.T)
-        t_div = t_div[: idx_last + 1]
-        t_div[-1] = 0
+        if idx_last == 0 or idx_last == n_max:
+            idx_last = n_max + 1 - parameters.N_0
+            t_div = np.append(t_div, parameters.T)
+        t_div[idx_last] = parameters.T
         n = parameters.N_0 + idx_last - 1
-        sum_times = np.sum(t_div)
+        sum_times = np.sum(t_div[: idx_last])
         int_n = n * parameters.T - sum_times
         int_n_square = (n ** 2 * parameters.T - (2 * parameters.N_0 - 1) *
-                        sum_times - 2 * sum(np.cumsum(t_div[: 0: - 1])))
-        t_div = t_div[: idx_last + 1]
-        t_div[- 1] = parameters.T
-    return(t_div, int(n), int_n, int_n_square)
+                        sum_times - 2 * sum(np.cumsum(
+                            t_div[idx_last - 1: 0: - 1])))
+        return(t_div[: idx_last + 1], int(n), int_n, int_n_square)
 
 
 def spinal_division_values(parameters, n):
