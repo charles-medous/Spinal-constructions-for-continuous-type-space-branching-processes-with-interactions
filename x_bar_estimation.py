@@ -147,22 +147,22 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    Param_set = [(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),
+    Param_set = [(0.3, 0.3, 0.3, 2, 0.3), (0.3, 0.3, 0.3, 5, 0.5),
                  (0.3, 0.3, 0.3, 8, 0.5), (0.3, 0.05, 0.3, 2, 0.5),
                  (0.3, 1, 0.3, 2, 0.5), (0.3, 1.5, 0.3, 2, 0.5),
                  (0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 1.5),
-                 (0.05, 0.3, 0.3, 2, 0.5), (1, 0.3, 0.3, 2, 0.5),
-                 (1.5, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),
+                 (0.05, 0.3, 0.3, 2, 0.5), (0.8, 0.3, 0.3, 2, 0.5),
+                 (1.2, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),
                  (0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 1.8, 2, 0.5)]
     print('Choose idx of the parameters (mu, r, d, N_0, init_mass) in the ' +
           'folowing list :\n' +
           '[(0.3, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.3, 5, 0.5),\n'+
-                       '(0.3, 0.3, 0.3, 10, 0.5), (0.3, 0.05, 0.3, 2, 0.5),\n'+
-                       '(0.3, 1, 0.3, 2, 0.5), (0.3, 2, 0.3, 2, 0.5),\n'+
+                       '(0.3, 0.3, 0.3, 8, 0.5), (0.3, 0.05, 0.3, 2, 0.5),\n'+
+                       '(0.3, 1, 0.3, 2, 0.5), (0.3, 1.5, 0.3, 2, 0.5),\n'+
                        '(0.3, 0.3, 0.3, 2, 1), (0.3, 0.3, 0.3, 2, 2),\n'+
                        '(0.05, 0.3, 0.3, 2, 0.5), (1, 0.3, 0.3, 2, 0.5),\n'+
-                       '(2, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),\n'+
-                       '(0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 2, 2, 0.5)]\n')
+                       '(1.5, 0.3, 0.3, 2, 0.5), (0.3, 0.3, 0.05, 2, 0.5),\n'+
+                       '(0.3, 0.3, 1, 2, 0.5), (0.3, 0.3, 1.8, 2, 0.5)]\n')
     idx = -1
     while idx < 0 or idx > 13:
         idx = int(input("Enter the chosen idx between 0 and 13: idx = "))
@@ -171,32 +171,31 @@ if __name__ == "__main__":
     while run == 'n' or run == 'no' or run == 'N' or run == 'NO':
         M = int(input("Enter the number of Monte-Carlo iterations: M = "))
         if idx in [0, 6, 7, 8, 9, 10]:
-            running_time = M * 3.7 / 10000
+            running_time = M * 10 / 10000
         elif idx in [4, 12]:
-            running_time = M * 4.9 / 10000
+            running_time = M * 12 / 10000
         elif idx in [3, 11]:
-            running_time = M * 3.1 / 10000
+            running_time = M * 8 / 10000
         elif idx == 1:
-            running_time = M * 8.7 / 10000
+            running_time = M * 25 / 10000
         elif idx in [5, 13]:
-            running_time = M * 6 / 10000
-        elif idx == 2:
             running_time = M * 18 / 10000
+        elif idx == 2:
+            running_time = M * 50 / 10000
 
         if  M < 100000:
             print("running time: around %.d secondes" % (round(running_time)))
         else:
             print("running time: around %.1f min" % (running_time/60))
         run = input("do you confirm? (y/n) ")
-  
+
     (mu, r, d, N_0, init_mass) = Param_set[idx]
     parameters = Parameters(mu, r, d, N_0, init_mass, 1)
     x_bar_spine = 0
     x_bar_spine_1 = 0
     x_bar = 0
-
     for i in tqdm(range(0, M), mininterval=1, ncols=100,
-                  desc="x_bar estimation. Progress: "):
+                  desc="x_bar mean estimation. Progress: "):
         # Spinal method 1
         parameters.psi = 1
         x_bar_spine += spinal_method.trajectory(parameters) / M
@@ -206,13 +205,26 @@ if __name__ == "__main__":
         # Ogata's method
         x_bar += ogata_method.trajectory(parameters) / M
 
-    print('\n \n x_bar = %.3f with spinal method 1' % (x_bar_spine))
-    print('\n x_bar = %.3f with spinal method 2' % (x_bar_spine_1))
-    print('\n x_bar= %.3f with Ogata method' % (x_bar))
-    rpd = [2 * abs(x_bar_spine-x_bar_spine_1) / (x_bar_spine + x_bar_spine_1),
-           2 * abs(x_bar_spine-x_bar) / (x_bar_spine + x_bar),
-           2 * abs(x_bar-x_bar_spine_1) / (x_bar + x_bar_spine_1)]
-    print('\n Relative Percent Difference: RPD_{S1,S2} = ' +
-          "{:.1%}".format(rpd[0]) + ', RPD_{S1,O} = '  +
-          "{:.1%}".format(rpd[1]) + ', RPD_{S2,O} = ' +
-          "{:.1%}".format(rpd[2]))
+    sigma_square_psi_1 = 0
+    sigma_square_psi_2 = 0
+    sigma_square = 0
+    for i in tqdm(range(0, M), mininterval=1, ncols=100,
+                  desc="x_bar variance estimation. Progress: "):
+        parameters.psi = 1
+        sigma_square_psi_1 += (spinal_method.trajectory(parameters) -
+                           x_bar_spine) ** 2 / M
+        parameters.psi = 2
+        sigma_square_psi_2 += (spinal_method.trajectory(parameters) -
+                           x_bar_spine_1) ** 2 / M
+        sigma_square += (ogata_method.trajectory(parameters) -
+                           x_bar) ** 2 / M
+
+    print('\n \n x_bar = %.2f +- %.3f with spinal method 1' % (x_bar_spine,
+                                          (np.sqrt(sigma_square_psi_1 / M)
+                                           * 1.96)))
+    print('\n \n x_bar = %.2f +- %.3f with spinal method 2' % (x_bar_spine_1,
+                                          (np.sqrt(sigma_square_psi_2 / M)
+                                           * 1.96)))
+    print('\n \n x_bar = %.2f +- %.3f with Ogata method' % (x_bar,
+                                          (np.sqrt(sigma_square / M)
+                                           * 1.96)))
