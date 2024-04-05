@@ -100,7 +100,7 @@ def plot_running_times(parameters, M, N_pts = 15,
             axes[i][j].tick_params(axis='both', labelsize = 15)  
             axes[0][j].set_title('Efficiency with '+str_param[j], fontsize = 20)
             axes[n_rows-1][j].set_xlabel(str_param[j], fontsize = 20)
-            axes[i][0].set_ylabel(r'$\frac{T_S}{T_O}$     ',fontsize = 30, rotation=0)
+            axes[i][0].set_ylabel(r'$\frac{T_O}{T_S}$     ',fontsize = 30, rotation=0)
     for i in range(n_rows-1):
         for j in range(n_columns):
             axes[i][j].set_xticks([])
